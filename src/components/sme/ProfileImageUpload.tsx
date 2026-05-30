@@ -20,8 +20,8 @@ export function CoverImageUpload({ userId, shopId, currentPath, onUploaded }: Pr
   const url = publicAssetUrl(currentPath) ?? DEFAULT_COVER;
 
   const onPick = async (file: File) => {
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error(t("img_under_5mb"));
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error(t("logo_under_2mb"));
       return;
     }
     setBusy(true);

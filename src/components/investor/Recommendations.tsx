@@ -8,13 +8,14 @@ import { loadPrefs, savePrefs, type InvestorPrefs } from "@/lib/investorPrefs";
 import { recommendSMEs } from "@/lib/recommend";
 import { SMECard } from "./SMECard";
 import { useI18n } from "@/lib/i18n";
+import { categoryLabel } from "@/lib/categories";
 
 type Props = { smes: DemoSME[] };
 
 const RISKS: RiskLevel[] = ["low", "medium", "high"];
 
 export function Recommendations({ smes }: Props) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [prefs, setPrefs] = useState<InvestorPrefs>(() => loadPrefs());
   const [editing, setEditing] = useState(prefs.categories.length === 0);
 
@@ -81,7 +82,7 @@ export function Recommendations({ smes }: Props) {
                     }`}
                   >
                     {active && <Check className="mr-1 inline h-3 w-3" />}
-                    {c}
+                    {categoryLabel(c, lang)}
                   </button>
                 );
               })}
@@ -155,7 +156,7 @@ export function Recommendations({ smes }: Props) {
           <div className="flex flex-wrap gap-1.5">
             {prefs.categories.map((c) => (
               <Badge key={c} variant="secondary" className="rounded-full">
-                {c}
+                {categoryLabel(c, lang)}
               </Badge>
             ))}
           </div>

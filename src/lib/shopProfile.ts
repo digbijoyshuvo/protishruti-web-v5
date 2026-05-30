@@ -32,6 +32,8 @@ export const SHOP_ASSETS_BUCKET = "shop-assets";
 
 export function publicAssetUrl(path: string | null): string | null {
   if (!path) return null;
+  // Allow storing direct image URLs (e.g. seeded demo shops) in cover_path/logo_path.
+  if (/^https?:\/\//i.test(path)) return path;
   const { data } = supabase.storage.from(SHOP_ASSETS_BUCKET).getPublicUrl(path);
   return data.publicUrl;
 }

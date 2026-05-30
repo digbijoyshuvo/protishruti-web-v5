@@ -3,26 +3,13 @@
 
 export type RiskLevel = "low" | "medium" | "high";
 
-export type SMECategory =
-  | "Agriculture"
-  | "Fashion"
-  | "Food"
-  | "Technology"
-  | "Handicrafts"
-  | "Retail"
-  | "Manufacturing"
-  | "Services";
+// Aligned with the SME signup categories in src/lib/categories.ts so investor
+// filters/recommendations use exactly the same taxonomy SME owners pick from.
+import { BUSINESS_CATEGORIES } from "./categories";
 
-export const SME_CATEGORIES: SMECategory[] = [
-  "Agriculture",
-  "Fashion",
-  "Food",
-  "Technology",
-  "Handicrafts",
-  "Retail",
-  "Manufacturing",
-  "Services",
-];
+export type SMECategory = string;
+
+export const SME_CATEGORIES: SMECategory[] = BUSINESS_CATEGORIES.map((c) => c.value);
 
 export type DemoSME = {
   id: string;
@@ -54,7 +41,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-001",
     name: "Rahim Organic Farms",
-    category: "Agriculture",
+    category: "vegetable",
     description:
       "Pesticide-free vegetable cooperative supplying 40+ Dhaka restaurants with daily fresh produce.",
     location: "Savar, Dhaka",
@@ -75,7 +62,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-002",
     name: "Nakshi Threads",
-    category: "Fashion",
+    category: "tailoring",
     description:
       "Handloom kantha apparel brand selling on Shopify, exporting to UK and Canada.",
     location: "Jamalpur",
@@ -95,7 +82,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-003",
     name: "Padma Pickles Co.",
-    category: "Food",
+    category: "restaurant",
     description:
       "Traditional achar producer with HACCP-certified kitchen, listed on Chaldal and Daraz.",
     location: "Rajshahi",
@@ -116,7 +103,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-004",
     name: "ByteBari",
-    category: "Technology",
+    category: "service",
     description:
       "POS + inventory SaaS for kirana shops, 1,200 paying merchants across 6 cities.",
     location: "Banani, Dhaka",
@@ -137,7 +124,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-005",
     name: "Tangail Loom House",
-    category: "Handicrafts",
+    category: "manufacturing",
     description: "Weaver collective of 80 artisans producing premium tant sarees.",
     location: "Tangail",
     fundingGoal: 1200000,
@@ -156,7 +143,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-006",
     name: "Cox's Seafood Direct",
-    category: "Food",
+    category: "restaurant",
     description: "Cold-chain seafood supplier from Cox's Bazar to Dhaka restaurants.",
     location: "Cox's Bazar",
     fundingGoal: 3500000,
@@ -176,7 +163,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-007",
     name: "Sundarban Honey Co.",
-    category: "Agriculture",
+    category: "vegetable",
     description: "Mangrove honey producer with GI certification, retailing across South Asia.",
     location: "Khulna",
     fundingGoal: 950000,
@@ -195,7 +182,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-008",
     name: "Dhaka Streetwear",
-    category: "Fashion",
+    category: "tailoring",
     description: "Gen-Z streetwear label with 80k Instagram followers and pop-up retail.",
     location: "Dhanmondi, Dhaka",
     fundingGoal: 1800000,
@@ -215,7 +202,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-009",
     name: "EcoBrick BD",
-    category: "Manufacturing",
+    category: "manufacturing",
     description: "Recycled-plastic brick maker for low-cost housing developers.",
     location: "Gazipur",
     fundingGoal: 4200000,
@@ -234,7 +221,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-010",
     name: "Lalbagh Spice House",
-    category: "Retail",
+    category: "kirana",
     description: "Old Dhaka spice retailer with growing e-commerce arm and 3 outlets.",
     location: "Lalbagh, Dhaka",
     fundingGoal: 600000,
@@ -253,7 +240,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-011",
     name: "SkillBari Academy",
-    category: "Services",
+    category: "service",
     description: "Vocational training for garment workers, partnered with 12 RMG factories.",
     location: "Mirpur, Dhaka",
     fundingGoal: 2000000,
@@ -272,7 +259,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-012",
     name: "JuteCraft Studio",
-    category: "Handicrafts",
+    category: "manufacturing",
     description: "Designer jute goods exporter, recently featured at Paris Maison&Objet.",
     location: "Faridpur",
     fundingGoal: 1300000,
@@ -291,7 +278,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-013",
     name: "RidePro Logistics",
-    category: "Services",
+    category: "service",
     description: "Last-mile delivery network for e-commerce in 4 divisional cities.",
     location: "Chittagong",
     fundingGoal: 3800000,
@@ -311,7 +298,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-014",
     name: "Sylhet Tea Roasters",
-    category: "Food",
+    category: "tea_stall",
     description: "Specialty single-origin tea brand sourcing from 6 Sylhet estates.",
     location: "Sylhet",
     fundingGoal: 1100000,
@@ -330,7 +317,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-015",
     name: "Bogra Furniture Works",
-    category: "Manufacturing",
+    category: "manufacturing",
     description: "Solid-wood furniture workshop supplying corporate offices nationwide.",
     location: "Bogra",
     fundingGoal: 2600000,
@@ -349,7 +336,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-016",
     name: "Bay of Bengal Salt",
-    category: "Agriculture",
+    category: "kirana",
     description: "Premium sea-salt producer with food-grade refinery and HORECA distribution.",
     location: "Chittagong",
     fundingGoal: 1700000,
@@ -368,7 +355,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-017",
     name: "PixelHaat",
-    category: "Technology",
+    category: "service",
     description: "Mobile-first marketplace for rural artisans, 4,500 active sellers.",
     location: "Uttara, Dhaka",
     fundingGoal: 4500000,
@@ -388,7 +375,7 @@ export const DEMO_SMES: DemoSME[] = [
   {
     id: "sme-018",
     name: "Mymensingh Dairy Co-op",
-    category: "Retail",
+    category: "kirana",
     description: "120-farmer dairy cooperative bottling pasteurized milk and ghee.",
     location: "Mymensingh",
     fundingGoal: 1400000,
