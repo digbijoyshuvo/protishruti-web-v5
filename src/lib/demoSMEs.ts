@@ -3,26 +3,13 @@
 
 export type RiskLevel = "low" | "medium" | "high";
 
-export type SMECategory =
-  | "Agriculture"
-  | "Fashion"
-  | "Food"
-  | "Technology"
-  | "Handicrafts"
-  | "Retail"
-  | "Manufacturing"
-  | "Services";
+// Aligned with the SME signup categories in src/lib/categories.ts so investor
+// filters/recommendations use exactly the same taxonomy SME owners pick from.
+import { BUSINESS_CATEGORIES } from "./categories";
 
-export const SME_CATEGORIES: SMECategory[] = [
-  "Agriculture",
-  "Fashion",
-  "Food",
-  "Technology",
-  "Handicrafts",
-  "Retail",
-  "Manufacturing",
-  "Services",
-];
+export type SMECategory = string;
+
+export const SME_CATEGORIES: SMECategory[] = BUSINESS_CATEGORIES.map((c) => c.value);
 
 export type DemoSME = {
   id: string;
