@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type Role = "sme" | "investor" | "admin";
 
@@ -11,7 +12,6 @@ type Ctx = {
   rolesLoading: boolean;
   roles: Role[];
   signOut: () => Promise<void>;
-  setActiveRole: (role: "sme" | "investor") => Promise<void>;
 };
 
 const AuthContext = createContext<Ctx>({
@@ -21,7 +21,6 @@ const AuthContext = createContext<Ctx>({
   rolesLoading: true,
   roles: [],
   signOut: async () => {},
-  setActiveRole: async () => {},
 });
 
 async function fetchRoles(userId: string): Promise<Role[]> {
@@ -53,6 +52,16 @@ async function applyPendingRole(userId: string): Promise<Role[] | null> {
     await supabase.from("user_roles").delete().eq("user_id", userId);
     await supabase.from("user_roles").insert({ user_id: userId, role: pending });
     return [pending as Role];
+  }
+  // Returning user tried to sign up again with a different role (e.g.
+  // signed up as investor with Google, now clicked Signup as SME with the
+  // same Google account). One email = one account: keep their original
+  // role and tell them what happened.
+  if (!isFresh && existing.length >= 1 && !existing.includes(pending as Role)) {
+    const existingLabel = existing[0] === "investor" ? "Investor" : "SME Owner";
+    toast.error(
+      `This email is already registered as ${existingLabel}. Signed you in to your existing account.`
+    );
   }
   return existing;
 }
@@ -118,15 +127,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRolesLoading(false);
   };
 
-  const setActiveRole = async (role: "sme" | "investor") => {
-    if (!user) return;
-    await supabase.from("user_roles").delete().eq("user_id", user.id);
-    await supabase.from("user_roles").insert({ user_id: user.id, role });
-    setRoles([role]);
-  };
-
   return (
-    <AuthContext.Provider value={{ user, session, loading, rolesLoading, roles, signOut, setActiveRole }}>
+    <AuthContext.Provider value={{ user, session, loading, rolesLoading, roles, signOut }}>
       {children}
     </AuthContext.Provider>
   );
