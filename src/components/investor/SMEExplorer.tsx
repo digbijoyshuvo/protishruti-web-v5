@@ -13,6 +13,7 @@ import {
 } from "@/lib/demoSMEs";
 import { SMECard, SMECardSkeleton } from "./SMECard";
 import { useI18n } from "@/lib/i18n";
+import { categoryLabel } from "@/lib/categories";
 
 type SortKey = "trending" | "most_funded" | "newest" | "highest_roi";
 
@@ -32,7 +33,7 @@ type Props = {
 };
 
 export function SMEExplorer({ smes, loading }: Props) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
   const [sort, setSort] = useState<SortKey>("trending");
@@ -162,7 +163,7 @@ export function SMEExplorer({ smes, loading }: Props) {
                           : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground"
                       }`}
                     >
-                      {c}
+                      {categoryLabel(c, lang)}
                     </button>
                   );
                 })}

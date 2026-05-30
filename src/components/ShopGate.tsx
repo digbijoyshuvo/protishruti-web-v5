@@ -44,7 +44,22 @@ export function ShopGate({ children }: { children: ReactNode }) {
             onSubmit={async (e) => {
               e.preventDefault();
               if (!user || !name.trim()) return;
-              const { data, error } = await supabase.from("shops").insert({ owner_id: user.id, name: name.trim(), address, category }).select().single();
+              // Seed sensible investor-facing defaults so the new SME shows up
+              // for investors immediately (owner can edit later in profile).
+              const seed = {
+                owner_id: user.id,
+                name: name.trim(),
+                address,
+                category,
+                owner_display_name: (user.user_metadata as any)?.full_name ?? user.email ?? null,
+                funding_goal: 1000000,
+                current_funding: 0,
+                roi_expectation: 18,
+                monthly_revenue: 150000,
+                risk_level: "medium" as const,
+                tags: category ? [category] : [],
+              };
+              const { data, error } = await supabase.from("shops").insert(seed).select().single();
               if (!error && data) setShop(data as Shop);
             }}
           >

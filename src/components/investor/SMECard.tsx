@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { MapPin, TrendingUp, Users, Sparkles, ShieldCheck, Flame } from "lucide-react";
 import { type DemoSME, fundingProgress, formatBDT } from "@/lib/demoSMEs";
+import { categoryLabel } from "@/lib/categories";
 import { useI18n } from "@/lib/i18n";
 
 type Props = {
@@ -34,7 +35,7 @@ function highlightText(text: string, term?: string) {
 }
 
 export function SMECard({ sme, highlight, onView }: Props) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const navigate = useNavigate();
   const progress = useMemo(() => fundingProgress(sme), [sme]);
   const riskLabel = t(`risk_${sme.riskLevel}`);
@@ -68,7 +69,7 @@ export function SMECard({ sme, highlight, onView }: Props) {
           <ShieldCheck className="mr-1 h-3 w-3" /> {riskLabel} {t("risk_suffix")}
         </Badge>
         <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between">
-          <div className="text-xs font-medium text-white/90">{sme.category}</div>
+          <div className="text-xs font-medium text-white/90">{categoryLabel(sme.category, lang)}</div>
           {typeof sme.score === "number" && (
             <div className="rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-bold text-primary shadow">
               {sme.score}% {t("card_match")}
