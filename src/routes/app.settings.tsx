@@ -15,18 +15,9 @@ export const Route = createFileRoute("/app/settings")({ component: SettingsPage 
 
 function SettingsPage() {
   const { t, lang, setLang } = useI18n();
-  const { user, roles, setActiveRole } = useAuth();
+  const { user, roles } = useAuth();
   const [shop, setShop] = useState<any>(null);
   const activeRole: "sme" | "investor" = roles.includes("investor") ? "investor" : "sme";
-
-  const switchRole = async (r: "sme" | "investor") => {
-    try {
-      await setActiveRole(r);
-      toast.success(t("saved_ok"));
-    } catch (e: any) {
-      toast.error(e?.message ?? "Failed");
-    }
-  };
 
   useEffect(() => {
     if (!user) return;
