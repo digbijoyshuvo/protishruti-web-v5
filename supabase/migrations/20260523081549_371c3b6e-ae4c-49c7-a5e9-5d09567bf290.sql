@@ -1,0 +1,2 @@
+CREATE POLICY "user_roles_insert_own" ON public.user_roles FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id AND role IN ('sme','investor'));
+CREATE POLICY "user_roles_delete_own" ON public.user_roles FOR DELETE TO authenticated USING (auth.uid() = user_id AND role IN ('sme','investor'));
