@@ -47,6 +47,7 @@ import {
 import { Recommendations } from "@/components/investor/Recommendations";
 import { SMEExplorer } from "@/components/investor/SMEExplorer";
 import { SMECard, SMECardSkeleton } from "@/components/investor/SMECard";
+import { BackendSMEs } from "@/components/investor/BackendSMEs";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -420,6 +421,9 @@ export function InvestorDashboard() {
       <div id="recommended" className="scroll-mt-24">
         <Recommendations smes={smes} />
       </div>
+
+      {/* ---- AI-matched SMEs from backend ---- */}
+      <BackendSMEs />
 
       {/* ---- Explorer ---- */}
       <section id="explore" className="scroll-mt-24 space-y-3">
