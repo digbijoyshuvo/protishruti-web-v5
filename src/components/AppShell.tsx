@@ -45,6 +45,7 @@ const smeGroups: NavGroup[] = [
     labelKey: "nav_group_capital_growth",
     items: [
       { to: "/app/find-investor", labelKey: "find_investor", icon: Handshake },
+      { to: "/app/match-investors", labelKey: "match_investors", icon: Sparkles },
       { to: "/app/identity", labelKey: "nav_identity_verification", icon: IdBadge },
       { to: "/app/verification", labelKey: "verification", icon: ShieldCheck },
     ],
