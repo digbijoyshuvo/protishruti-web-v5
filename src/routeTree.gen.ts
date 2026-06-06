@@ -21,6 +21,7 @@ import { Route as AppVerificationRouteImport } from './routes/app.verification'
 import { Route as AppUploadRouteImport } from './routes/app.upload'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppMatchInvestorsRouteImport } from './routes/app.match-investors'
 import { Route as AppManualRouteImport } from './routes/app.manual'
 import { Route as AppInvestorsRouteImport } from './routes/app.investors'
 import { Route as AppIdentityRouteImport } from './routes/app.identity'
@@ -91,6 +92,11 @@ const AppProfileRoute = AppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMatchInvestorsRoute = AppMatchInvestorsRouteImport.update({
+  id: '/match-investors',
+  path: '/match-investors',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppManualRoute = AppManualRouteImport.update({
   id: '/manual',
   path: '/manual',
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/app/identity': typeof AppIdentityRoute
   '/app/investors': typeof AppInvestorsRoute
   '/app/manual': typeof AppManualRoute
+  '/app/match-investors': typeof AppMatchInvestorsRoute
   '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/upload': typeof AppUploadRoute
@@ -171,6 +178,7 @@ export interface FileRoutesByTo {
   '/app/identity': typeof AppIdentityRoute
   '/app/investors': typeof AppInvestorsRoute
   '/app/manual': typeof AppManualRoute
+  '/app/match-investors': typeof AppMatchInvestorsRoute
   '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/upload': typeof AppUploadRoute
@@ -195,6 +203,7 @@ export interface FileRoutesById {
   '/app/identity': typeof AppIdentityRoute
   '/app/investors': typeof AppInvestorsRoute
   '/app/manual': typeof AppManualRoute
+  '/app/match-investors': typeof AppMatchInvestorsRoute
   '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/upload': typeof AppUploadRoute
@@ -220,6 +229,7 @@ export interface FileRouteTypes {
     | '/app/identity'
     | '/app/investors'
     | '/app/manual'
+    | '/app/match-investors'
     | '/app/profile'
     | '/app/settings'
     | '/app/upload'
@@ -242,6 +252,7 @@ export interface FileRouteTypes {
     | '/app/identity'
     | '/app/investors'
     | '/app/manual'
+    | '/app/match-investors'
     | '/app/profile'
     | '/app/settings'
     | '/app/upload'
@@ -265,6 +276,7 @@ export interface FileRouteTypes {
     | '/app/identity'
     | '/app/investors'
     | '/app/manual'
+    | '/app/match-investors'
     | '/app/profile'
     | '/app/settings'
     | '/app/upload'
@@ -373,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/match-investors': {
+      id: '/app/match-investors'
+      path: '/match-investors'
+      fullPath: '/app/match-investors'
+      preLoaderRoute: typeof AppMatchInvestorsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/manual': {
       id: '/app/manual'
       path: '/manual'
@@ -447,6 +466,7 @@ interface AppRouteChildren {
   AppIdentityRoute: typeof AppIdentityRoute
   AppInvestorsRoute: typeof AppInvestorsRoute
   AppManualRoute: typeof AppManualRoute
+  AppMatchInvestorsRoute: typeof AppMatchInvestorsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppUploadRoute: typeof AppUploadRoute
@@ -464,6 +484,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppIdentityRoute: AppIdentityRoute,
   AppInvestorsRoute: AppInvestorsRoute,
   AppManualRoute: AppManualRoute,
+  AppMatchInvestorsRoute: AppMatchInvestorsRoute,
   AppProfileRoute: AppProfileRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppUploadRoute: AppUploadRoute,
