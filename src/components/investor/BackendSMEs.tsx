@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Loader2, MapPin, TrendingUp, Wallet, X } from "lucide-react";
+import { loadPrefs } from "@/lib/investorPrefs";
 
 const API = "https://sme-matchmaker-backend.onrender.com";
 
@@ -16,6 +17,44 @@ type BackendSME = {
   roi_expectation: number;
   risk_level: string;
 };
+
+type ScoredSME = BackendSME & { matchScore: number; reasons: string[] };
+
+function scoreSMEForInvestor(s: BackendSME): ScoredSME {
+  const prefs = loadPrefs();
+  const reasons: string[] = [];
+  let score = 40;
+
+  if (prefs.categories.length === 0 || prefs.categories.includes(s.category as any)) {
+    if (prefs.categories.includes(s.category as any)) {
+      score += 30;
+      reasons.push(`matches your ${s.category} interest`);
+    }
+  } else {
+    score -= 20;
+  }
+
+  const risk = (s.risk_level || "").toLowerCase() as any;
+  if (prefs.riskAppetite.includes(risk)) {
+    score += 15;
+    reasons.push(`${s.risk_level} risk fits your appetite`);
+  } else {
+    score -= 15;
+  }
+
+  if (s.roi_expectation >= prefs.minROI) {
+    score += Math.min(20, Math.round(s.roi_expectation - prefs.minROI));
+    if (s.roi_expectation >= 20) reasons.push(`high ROI of ${s.roi_expectation}%`);
+  } else {
+    score -= 10;
+  }
+
+  return {
+    ...s,
+    matchScore: Math.max(0, Math.min(100, Math.round(score))),
+    reasons,
+  };
+}
 
 type Recommendation = {
   investor_name: string;
@@ -42,7 +81,7 @@ const fmtUSD = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
 export function BackendSMEs() {
-  const [smes, setSmes] = useState<BackendSME[]>([]);
+  const [smes, setSmes] = useState<ScoredSME[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [selected, setSelected] = useState<BackendSME | null>(null);
@@ -57,7 +96,11 @@ export function BackendSMEs() {
         const res = await fetch(`${API}/smes`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data: BackendSME[] = await res.json();
-        if (!cancel) setSmes(data);
+        const scored = data
+          .map(scoreSMEForInvestor)
+          .sort((a, b) => b.matchScore - a.matchScore)
+          .slice(0, 5);
+        if (!cancel) setSmes(scored);
       } catch (e: any) {
         if (!cancel) setErr(e?.message ?? "Failed to load SMEs");
       } finally {
@@ -97,7 +140,7 @@ export function BackendSMEs() {
           <Sparkles className="h-5 w-5 text-primary" /> AI-Matched SMEs
         </h2>
         <p className="text-sm text-muted-foreground">
-          Live SMEs from the matchmaker backend. Click any card for AI investor matches.
+          Top 5 SMEs from the matchmaker backend ranked against your investor preferences. Click a card for AI investor matches.
         </p>
       </div>
 
@@ -127,11 +170,23 @@ export function BackendSMEs() {
                       <MapPin className="h-3 w-3" /> {s.region}
                     </div>
                   </div>
-                  <Badge variant="outline" className={`shrink-0 border ${riskTone(s.risk_level)}`}>
-                    {s.risk_level}
+                  <Badge className="shrink-0 bg-primary text-primary-foreground">
+                    {s.matchScore}% match
                   </Badge>
                 </div>
-                <Badge variant="secondary" className="rounded-full">{s.category}</Badge>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Badge variant="secondary" className="rounded-full">{s.category}</Badge>
+                  <Badge variant="outline" className={`border ${riskTone(s.risk_level)}`}>
+                    {s.risk_level} risk
+                  </Badge>
+                </div>
+                {s.reasons.length > 0 && (
+                  <ul className="ml-4 list-disc space-y-0.5 text-[11px] text-muted-foreground">
+                    {s.reasons.slice(0, 2).map((r, i) => (
+                      <li key={i}>{r}</li>
+                    ))}
+                  </ul>
+                )}
                 <div className="grid grid-cols-3 gap-2 text-[11px]">
                   <div>
                     <div className="text-muted-foreground">Revenue</div>
