@@ -31,6 +31,7 @@ import { Route as AppDocumentsRouteImport } from './routes/app.documents'
 import { Route as AppAlertsRouteImport } from './routes/app.alerts'
 import { Route as AppSmeShopIdRouteImport } from './routes/app.sme.$shopId'
 import { Route as AppReviewUploadIdRouteImport } from './routes/app.review.$uploadId'
+import { Route as AppInvestorProfileNameRouteImport } from './routes/app.investor-profile.$name'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -142,6 +143,11 @@ const AppReviewUploadIdRoute = AppReviewUploadIdRouteImport.update({
   path: '/review/$uploadId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInvestorProfileNameRoute = AppInvestorProfileNameRouteImport.update({
+  id: '/investor-profile/$name',
+  path: '/investor-profile/$name',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/demo/sme': typeof DemoSmeRoute
   '/sme-preview/$smeId': typeof SmePreviewSmeIdRoute
   '/app/': typeof AppIndexRoute
+  '/app/investor-profile/$name': typeof AppInvestorProfileNameRoute
   '/app/review/$uploadId': typeof AppReviewUploadIdRoute
   '/app/sme/$shopId': typeof AppSmeShopIdRoute
 }
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/demo/sme': typeof DemoSmeRoute
   '/sme-preview/$smeId': typeof SmePreviewSmeIdRoute
   '/app': typeof AppIndexRoute
+  '/app/investor-profile/$name': typeof AppInvestorProfileNameRoute
   '/app/review/$uploadId': typeof AppReviewUploadIdRoute
   '/app/sme/$shopId': typeof AppSmeShopIdRoute
 }
@@ -212,6 +220,7 @@ export interface FileRoutesById {
   '/demo/sme': typeof DemoSmeRoute
   '/sme-preview/$smeId': typeof SmePreviewSmeIdRoute
   '/app/': typeof AppIndexRoute
+  '/app/investor-profile/$name': typeof AppInvestorProfileNameRoute
   '/app/review/$uploadId': typeof AppReviewUploadIdRoute
   '/app/sme/$shopId': typeof AppSmeShopIdRoute
 }
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/demo/sme'
     | '/sme-preview/$smeId'
     | '/app/'
+    | '/app/investor-profile/$name'
     | '/app/review/$uploadId'
     | '/app/sme/$shopId'
   fileRoutesByTo: FileRoutesByTo
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/demo/sme'
     | '/sme-preview/$smeId'
     | '/app'
+    | '/app/investor-profile/$name'
     | '/app/review/$uploadId'
     | '/app/sme/$shopId'
   id:
@@ -285,6 +296,7 @@ export interface FileRouteTypes {
     | '/demo/sme'
     | '/sme-preview/$smeId'
     | '/app/'
+    | '/app/investor-profile/$name'
     | '/app/review/$uploadId'
     | '/app/sme/$shopId'
   fileRoutesById: FileRoutesById
@@ -455,6 +467,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppReviewUploadIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/investor-profile/$name': {
+      id: '/app/investor-profile/$name'
+      path: '/investor-profile/$name'
+      fullPath: '/app/investor-profile/$name'
+      preLoaderRoute: typeof AppInvestorProfileNameRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -472,6 +491,7 @@ interface AppRouteChildren {
   AppUploadRoute: typeof AppUploadRoute
   AppVerificationRoute: typeof AppVerificationRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppInvestorProfileNameRoute: typeof AppInvestorProfileNameRoute
   AppReviewUploadIdRoute: typeof AppReviewUploadIdRoute
   AppSmeShopIdRoute: typeof AppSmeShopIdRoute
 }
@@ -490,6 +510,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppUploadRoute: AppUploadRoute,
   AppVerificationRoute: AppVerificationRoute,
   AppIndexRoute: AppIndexRoute,
+  AppInvestorProfileNameRoute: AppInvestorProfileNameRoute,
   AppReviewUploadIdRoute: AppReviewUploadIdRoute,
   AppSmeShopIdRoute: AppSmeShopIdRoute,
 }
