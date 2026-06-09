@@ -16,7 +16,8 @@ import {
 import {
   type ShopProfile,
   publicAssetUrl,
-  DEFAULT_COVER,
+  defaultCoverForCategory,
+  categoryLogoGradient,
   fundingProgressPct,
   formatBDT,
 } from "@/lib/shopProfile";
@@ -38,8 +39,9 @@ export function SMEProfileView({
   logoUrlOverride?: string | null;
 }) {
   const { t } = useI18n();
-  const cover = coverUrlOverride ?? publicAssetUrl(shop.cover_path) ?? DEFAULT_COVER;
+  const cover = coverUrlOverride ?? publicAssetUrl(shop.cover_path) ?? defaultCoverForCategory(shop.category);
   const logo = logoUrlOverride ?? publicAssetUrl(shop.logo_path);
+  const logoGradient = categoryLogoGradient(shop.category);
   const pct = fundingProgressPct(shop);
   const social = shop.social_links || {};
 
@@ -54,7 +56,7 @@ export function SMEProfileView({
             {logo ? (
               <img src={logo} alt={shop.name} className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5 text-2xl font-semibold text-primary">
+              <div className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${logoGradient} text-2xl font-semibold text-primary`}>
                 {shop.name.charAt(0)}
               </div>
             )}

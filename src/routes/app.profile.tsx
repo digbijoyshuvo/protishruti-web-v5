@@ -153,6 +153,7 @@ function ProfilePage() {
           kind="cover"
           currentPath={draft.cover_path}
           onUploaded={(p) => update("cover_path", p)}
+          category={draft.category}
         />
         <LogoUpload
           userId={user!.id}
@@ -160,6 +161,7 @@ function ProfilePage() {
           kind="logo"
           currentPath={draft.logo_path}
           onUploaded={(p) => update("logo_path", p)}
+          category={draft.category}
         />
       </Card>
 
