@@ -2,7 +2,12 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Camera, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
-import { uploadShopAsset, publicAssetUrl, DEFAULT_COVER } from "@/lib/shopProfile";
+import {
+  uploadShopAsset,
+  publicAssetUrl,
+  defaultCoverForCategory,
+  categoryLogoGradient,
+} from "@/lib/shopProfile";
 import { useI18n } from "@/lib/i18n";
 
 type Props = {
@@ -11,6 +16,7 @@ type Props = {
   kind: "logo" | "cover";
   currentPath: string | null;
   onUploaded: (path: string) => void;
+  category?: string | null;
 };
 
 export function CoverImageUpload({ userId, shopId, currentPath, onUploaded }: Props) {
