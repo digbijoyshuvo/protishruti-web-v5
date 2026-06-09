@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ShopGate, useShop } from "@/components/ShopGate";
-import { Sparkles, TrendingUp, ShieldAlert, Users } from "lucide-react";
+import { Sparkles, TrendingUp, ShieldAlert, Users, UserCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/match-investors")({
@@ -30,7 +30,9 @@ const REGIONS = ["Dhaka", "Chattogram", "Sylhet", "Khulna", "Rajshahi"] as const
 type Recommendation = {
   investor_name: string;
   match_percentage: number;
-  matching_explanations: string[];
+  matching_explanations?: string[];
+  explanation?: string[];
+  risk_level?: string;
 };
 
 type ApiResponse = {
@@ -42,6 +44,7 @@ const ENDPOINT = "https://sme-matchmaker-backend.onrender.com/recommend";
 
 function MatchInvestorsPage() {
   const { shop } = useShop();
+  const navigate = useNavigate();
   const [name, setName] = useState(shop?.name ?? "");
   const [category, setCategory] = useState<string>("");
   const [region, setRegion] = useState<string>("");
@@ -98,6 +101,27 @@ function MatchInvestorsPage() {
     if (pct >= 80) return "bg-success text-success-foreground";
     if (pct >= 60) return "bg-primary text-primary-foreground";
     return "bg-muted text-foreground";
+  };
+
+  const viewInvestor = (rec: Recommendation) => {
+    const slug = encodeURIComponent(rec.investor_name);
+    const payload = {
+      investor_name: rec.investor_name,
+      match_percentage: rec.match_percentage,
+      risk_level: rec.risk_level,
+      explanation: rec.explanation ?? rec.matching_explanations ?? [],
+      sme_context: {
+        name,
+        category,
+        region,
+        monthly_revenue: parseFloat(monthlyRevenue) || 0,
+        current_funding: parseFloat(currentFunding) || 0,
+        roi_expectation: parseFloat(roiExpectation) || 0,
+        predicted_risk: result?.predicted_risk,
+      },
+    };
+    sessionStorage.setItem(`investor:${slug}`, JSON.stringify(payload));
+    navigate({ to: "/app/investor-profile/$name", params: { name: slug } });
   };
 
   return (
@@ -224,13 +248,25 @@ function MatchInvestorsPage() {
                     {Math.round(rec.match_percentage)}% match
                   </Badge>
                 </div>
-                {rec.matching_explanations?.length > 0 && (
-                  <ul className="ml-4 list-disc space-y-1 text-xs text-muted-foreground">
-                    {rec.matching_explanations.map((ex, j) => (
-                      <li key={j}>{ex}</li>
-                    ))}
-                  </ul>
-                )}
+                {(() => {
+                  const lines = rec.explanation ?? rec.matching_explanations ?? [];
+                  return lines.length > 0 ? (
+                    <ul className="ml-4 list-disc space-y-1 text-xs text-muted-foreground">
+                      {lines.map((ex, j) => (
+                        <li key={j}>{ex}</li>
+                      ))}
+                    </ul>
+                  ) : null;
+                })()}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => viewInvestor(rec)}
+                >
+                  <UserCircle2 className="mr-1 h-4 w-4" /> View investor profile
+                </Button>
               </Card>
             ))}
             {result.recommendations.length === 0 && (
