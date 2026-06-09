@@ -41,6 +41,63 @@ export function publicAssetUrl(path: string | null): string | null {
 export const DEFAULT_COVER =
   "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=70";
 
+const DEFAULT_COVERS_BY_CATEGORY: Record<string, string> = {
+  kirana:
+    "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1600&q=70",
+  vegetable:
+    "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1600&q=70",
+  restaurant:
+    "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1600&q=70",
+  tailoring:
+    "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?auto=format&fit=crop&w=1600&q=70",
+  electronics:
+    "https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&w=1600&q=70",
+  pharmacy:
+    "https://images.unsplash.com/photo-1585435557343-3b092031a831?auto=format&fit=crop&w=1600&q=70",
+  hardware:
+    "https://images.unsplash.com/photo-1581141849291-1125c5f90218?auto=format&fit=crop&w=1600&q=70",
+  cosmetics:
+    "https://images.unsplash.com/photo-1522335789203-1a8dc95a08f1?auto=format&fit=crop&w=1600&q=70",
+  mobile:
+    "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1600&q=70",
+  stationery:
+    "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=1600&q=70",
+  tea_stall:
+    "https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=1600&q=70",
+  manufacturing:
+    "https://images.unsplash.com/photo-1565043589221-238a5f6fe8fe?auto=format&fit=crop&w=1600&q=70",
+  service:
+    "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1600&q=70",
+  other:
+    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=70",
+};
+
+export function defaultCoverForCategory(category: string | null | undefined): string {
+  if (!category) return DEFAULT_COVER;
+  return DEFAULT_COVERS_BY_CATEGORY[category] ?? DEFAULT_COVER;
+}
+
+/** Returns a stable tailwind gradient class for the given category (for logo fallback backgrounds). */
+export function categoryLogoGradient(category: string | null | undefined): string {
+  const map: Record<string, string> = {
+    kirana: "from-emerald-400/30 to-emerald-600/10",
+    vegetable: "from-green-400/30 to-green-600/10",
+    restaurant: "from-orange-400/30 to-orange-600/10",
+    tailoring: "from-pink-400/30 to-pink-600/10",
+    electronics: "from-blue-400/30 to-blue-600/10",
+    pharmacy: "from-teal-400/30 to-teal-600/10",
+    hardware: "from-slate-400/30 to-slate-600/10",
+    cosmetics: "from-rose-400/30 to-rose-600/10",
+    mobile: "from-indigo-400/30 to-indigo-600/10",
+    stationery: "from-amber-400/30 to-amber-600/10",
+    tea_stall: "from-yellow-400/30 to-yellow-600/10",
+    manufacturing: "from-stone-400/30 to-stone-600/10",
+    service: "from-cyan-400/30 to-cyan-600/10",
+    other: "from-primary/20 to-primary/5",
+  };
+  return map[category ?? ""] ?? "from-primary/20 to-primary/5";
+}
+
 const PROFILE_FIELDS: Array<keyof ShopProfile> = [
   "name",
   "logo_path",
