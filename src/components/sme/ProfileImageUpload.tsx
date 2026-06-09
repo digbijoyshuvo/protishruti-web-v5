@@ -19,11 +19,11 @@ type Props = {
   category?: string | null;
 };
 
-export function CoverImageUpload({ userId, shopId, currentPath, onUploaded }: Props) {
+export function CoverImageUpload({ userId, shopId, currentPath, onUploaded, category }: Props) {
   const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
-  const url = publicAssetUrl(currentPath) ?? DEFAULT_COVER;
+  const url = publicAssetUrl(currentPath) ?? defaultCoverForCategory(category);
 
   const onPick = async (file: File) => {
     if (file.size > 2 * 1024 * 1024) {
@@ -76,11 +76,12 @@ export function CoverImageUpload({ userId, shopId, currentPath, onUploaded }: Pr
   );
 }
 
-export function LogoUpload({ userId, shopId, currentPath, onUploaded }: Props) {
+export function LogoUpload({ userId, shopId, currentPath, onUploaded, category }: Props) {
   const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const url = publicAssetUrl(currentPath);
+  const gradient = categoryLogoGradient(category);
 
   const onPick = async (file: File) => {
     if (file.size > 2 * 1024 * 1024) {
@@ -105,7 +106,9 @@ export function LogoUpload({ userId, shopId, currentPath, onUploaded }: Props) {
         {url ? (
           <img src={url} alt="Logo" className="h-full w-full object-cover" loading="lazy" />
         ) : (
-          <Upload className="h-6 w-6 text-muted-foreground" />
+          <div className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${gradient} text-2xl font-semibold text-primary`}>
+            <Upload className="h-6 w-6 text-primary/70" />
+          </div>
         )}
       </div>
       <input
