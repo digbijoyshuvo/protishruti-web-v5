@@ -40,6 +40,7 @@ import { generateMockTxns } from "@/lib/mockData";
 import { InvestorDashboard } from "@/components/InvestorDashboard";
 import { VerificationBanner } from "@/components/VerificationBanner";
 import { AIBusinessAnalysis } from "@/components/AIBusinessAnalysis";
+import { MonthlyAnalysis } from "@/components/MonthlyAnalysis";
 
 export const Route = createFileRoute("/app/")({
   component: DashboardRouter,
@@ -342,9 +343,9 @@ function SmeDashboard() {
         </Card>
       </div>
 
-      {/* Table + AI summary */}
-      {/* Transaction history table */}
-      <Card className="overflow-hidden shadow-lg border border-border/50 transition-shadow duration-300 hover:shadow-xl">
+      {/* Transaction history + Monthly analysis */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card className="overflow-hidden shadow-lg border border-border/50 transition-shadow duration-300 hover:shadow-xl">
           <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
             <div>
               <div className="text-sm font-semibold">{t("txn_history")}</div>
@@ -414,6 +415,8 @@ function SmeDashboard() {
             </table>
           </div>
         </Card>
+        <MonthlyAnalysis txns={txns} lang={lang} healthScore={score} />
+      </div>
 
       {/* AI Business Analysis */}
       <AIBusinessAnalysis
