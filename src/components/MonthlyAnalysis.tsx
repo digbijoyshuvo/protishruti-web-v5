@@ -92,7 +92,7 @@ export function MonthlyAnalysis({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stats.cur.sales, stats.cur.expenses, lang]);
 
-  const isPositive = stats.profit_positive ?? stats.cur.profit >= 0;
+  const isPositive = stats.cur.profit >= 0;
   const growthUp = stats.growth >= 0;
   const tone =
     stats.margin >= 15 && growthUp
