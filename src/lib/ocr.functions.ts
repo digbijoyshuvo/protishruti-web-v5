@@ -155,3 +155,89 @@ Numbers: ${JSON.stringify(data.metrics)}`;
     const j = await res.json();
     return { text: j?.choices?.[0]?.message?.content ?? "" };
   });
+
+const AnalysisSchema = z.object({
+  pricing_landscape: z.string(),
+  market_leader: z.string(),
+  local_demand_trend: z.string(),
+  supply_risk: z.string(),
+  growth_opportunities: z.array(z.string()),
+  profit_boosters: z.array(z.string()),
+  next_week_actions: z.array(z.string()),
+});
+export type BusinessAnalysis = z.infer<typeof AnalysisSchema>;
+
+export const aiBusinessAnalysis = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (i: {
+      lang: "en" | "bn";
+      shop: { name?: string; category?: string | null; address?: string | null };
+      metrics: Record<string, number | string>;
+      topCounterparties?: string[];
+    }) => i,
+  )
+  .handler(async ({ data }) => {
+    const apiKey = process.env.LOVABLE_API_KEY;
+    if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
+    const langLabel = data.lang === "bn" ? "Bangla (বাংলা)" : "English";
+    const sys = `You are a senior SME market analyst for Bangladesh. Use the EXACT numbers provided (do not invent figures). Produce a concise, practical market analysis in ${langLabel} tailored to the shop's category and local context. Each section: 2-4 sentences max; lists: 3 bullets, each <= 18 words. Cite BDT figures verbatim where useful.`;
+    const userPrompt = `Shop: ${JSON.stringify(data.shop)}\nMetrics: ${JSON.stringify(data.metrics)}\nTop counterparties: ${JSON.stringify(data.topCounterparties ?? [])}\nReturn structured analysis covering: current pricing landscape; market info of a best profit-generating company in this SME category (name a real well-known Bangladeshi/regional example if possible); local demand trend; supply-side risk; growth opportunities; how to increase profit; next-week action plan.`;
+
+    const body = {
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: sys },
+        { role: "user", content: userPrompt },
+      ],
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "submit_analysis",
+            parameters: {
+              type: "object",
+              properties: {
+                pricing_landscape: { type: "string" },
+                market_leader: { type: "string" },
+                local_demand_trend: { type: "string" },
+                supply_risk: { type: "string" },
+                growth_opportunities: { type: "array", items: { type: "string" } },
+                profit_boosters: { type: "array", items: { type: "string" } },
+                next_week_actions: { type: "array", items: { type: "string" } },
+              },
+              required: [
+                "pricing_landscape",
+                "market_leader",
+                "local_demand_trend",
+                "supply_risk",
+                "growth_opportunities",
+                "profit_boosters",
+                "next_week_actions",
+              ],
+            },
+          },
+        },
+      ],
+      tool_choice: { type: "function", function: { name: "submit_analysis" } },
+    };
+
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      if (res.status === 429) throw new Error("Rate limited — please try again in a minute.");
+      if (res.status === 402) throw new Error("AI credits exhausted. Add credits in Workspace settings.");
+      throw new Error(`AI error ${res.status}: ${text.slice(0, 200)}`);
+    }
+    const json = await res.json();
+    const args = json?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+    if (!args) throw new Error("AI returned no structured result");
+    const parsed = JSON.parse(args);
+    const valid = AnalysisSchema.safeParse(parsed);
+    if (!valid.success) throw new Error("AI returned invalid analysis");
+    return valid.data;
+  });

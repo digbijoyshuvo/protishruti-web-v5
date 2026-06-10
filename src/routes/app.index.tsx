@@ -39,6 +39,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { generateMockTxns } from "@/lib/mockData";
 import { InvestorDashboard } from "@/components/InvestorDashboard";
 import { VerificationBanner } from "@/components/VerificationBanner";
+import { AIBusinessAnalysis } from "@/components/AIBusinessAnalysis";
 
 export const Route = createFileRoute("/app/")({
   component: DashboardRouter,
@@ -67,6 +68,7 @@ function SmeDashboard() {
   const [verified, setVerified] = useState(false);
   const [summary, setSummary] = useState("");
   const [isDemo, setIsDemo] = useState(false);
+  const [shopMeta, setShopMeta] = useState<{ name?: string; category?: string | null; address?: string | null }>({});
   const aiSummaryFn = useServerFn(aiSummary);
 
   useEffect(() => {
@@ -95,10 +97,11 @@ function SmeDashboard() {
       }
       const { data: s } = await supabase
         .from("shops")
-        .select("verified")
+        .select("verified,name,category,address")
         .eq("id", shop.id)
         .maybeSingle();
       setVerified(!!s?.verified);
+      setShopMeta({ name: s?.name, category: s?.category, address: s?.address });
     })();
   }, [shop?.id]);
 
@@ -340,9 +343,8 @@ function SmeDashboard() {
       </div>
 
       {/* Table + AI summary */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Transaction history table */}
-        <Card className="overflow-hidden shadow-lg border border-border/50 transition-shadow duration-300 hover:shadow-xl">
+      {/* Transaction history table */}
+      <Card className="overflow-hidden shadow-lg border border-border/50 transition-shadow duration-300 hover:shadow-xl">
           <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
             <div>
               <div className="text-sm font-semibold">{t("txn_history")}</div>
@@ -413,34 +415,26 @@ function SmeDashboard() {
           </div>
         </Card>
 
-        {/* AI Summary */}
-        <Card className="border border-border/50 border-l-4 border-l-[#3D52A0] bg-gradient-to-br from-[#3D52A0]/5 to-transparent p-5 shadow-lg transition-shadow duration-300 hover:shadow-xl">
-          <div className="mb-3 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 animate-pulse text-[#3D52A0]" />
-            <span className="font-display text-sm font-semibold text-[#3D52A0]">
-              {t("ai_summary")}
-            </span>
-          </div>
-          <div className="mb-4 grid grid-cols-2 gap-2">
-            {[
-              { label: "30d Revenue", value: fmtBDT(totalSales30) },
-              { label: "30d Expenses", value: fmtBDT(totalExp30) },
-              { label: "Net Profit", value: fmtBDT(netProfit30) },
-              { label: "Health", value: `${score}/100` },
-            ].map((m) => (
-              <div key={m.label} className="rounded-xl bg-white p-2.5 shadow-sm">
-                <div className="text-[10px] text-muted-foreground">{m.label}</div>
-                <div className="mt-0.5 text-sm font-bold text-[#3D52A0]">{m.value}</div>
-              </div>
-            ))}
-          </div>
-          <p className="whitespace-pre-line text-sm leading-relaxed">
-            {summary || (
-              <span className="text-muted-foreground">Generating insights…</span>
-            )}
-          </p>
-        </Card>
-      </div>
+      {/* AI Business Analysis */}
+      <AIBusinessAnalysis
+        lang={lang}
+        shop={{ name: shopMeta.name ?? shop?.name, category: shopMeta.category, address: shopMeta.address }}
+        metrics={{
+          today_sales_BDT: today.sales,
+          today_expenses_BDT: today.expenses,
+          today_profit_BDT: today.profit,
+          outstanding_baki_BDT: baki,
+          health_score: score,
+          last_30d_sales_BDT: totalSales30,
+          last_30d_expenses_BDT: totalExp30,
+          last_30d_net_profit_BDT: netProfit30,
+          transactions_count: txns.length,
+          data_source: isDemo ? "sample" : "real",
+        }}
+        topCounterparties={Array.from(
+          new Set(recent.map((r) => r.counterparty).filter((x): x is string => !!x)),
+        ).slice(0, 5)}
+      />
     </div>
   );
 }
