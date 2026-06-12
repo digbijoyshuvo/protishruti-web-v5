@@ -113,7 +113,13 @@ function MatchInvestorsPage() {
       });
       if (!res.ok) throw new Error(`Request failed (${res.status})`);
       const data = (await res.json()) as ApiResponse;
-      setResult(data);
+      const sorted: ApiResponse = {
+        ...data,
+        recommendations: [...(data.recommendations ?? [])].sort(
+          (a, b) => (b.match_percentage ?? 0) - (a.match_percentage ?? 0),
+        ),
+      };
+      setResult(sorted);
       toast.success("Matches found");
     } catch (err: any) {
       toast.error(err.message ?? "Failed to fetch recommendations");
