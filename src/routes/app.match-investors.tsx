@@ -1,20 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ShopGate, useShop } from "@/components/ShopGate";
-import { Sparkles, TrendingUp, ShieldAlert, Users, UserCircle2 } from "lucide-react";
+import { Sparkles, TrendingUp, ShieldAlert, Users, UserCircle2, AlertTriangle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/app/match-investors")({
   component: () => (
@@ -24,7 +18,6 @@ export const Route = createFileRoute("/app/match-investors")({
   ),
 });
 
-const CATEGORIES = ["SaaS", "FinTech", "E-commerce", "AgriTech", "Healthcare"] as const;
 const REGIONS = ["Dhaka", "Chattogram", "Sylhet", "Khulna", "Rajshahi"] as const;
 
 type Recommendation = {
@@ -42,35 +35,74 @@ type ApiResponse = {
 
 const ENDPOINT = "https://sme-matchmaker-backend.onrender.com/recommend";
 
+type ShopFull = {
+  id: string;
+  name: string | null;
+  category: string | null;
+  address: string | null;
+  monthly_revenue: number | null;
+  current_funding: number | null;
+  roi_expectation: number | null;
+};
+
+function deriveRegion(address: string | null): string | null {
+  if (!address) return null;
+  const a = address.toLowerCase();
+  for (const r of REGIONS) if (a.includes(r.toLowerCase())) return r;
+  return null;
+}
+
 function MatchInvestorsPage() {
   const { shop } = useShop();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [name, setName] = useState(shop?.name ?? "");
-  const [category, setCategory] = useState<string>("");
-  const [region, setRegion] = useState<string>("");
-  const [monthlyRevenue, setMonthlyRevenue] = useState("");
-  const [currentFunding, setCurrentFunding] = useState("");
-  const [roiExpectation, setRoiExpectation] = useState("");
+  const [profile, setProfile] = useState<ShopFull | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ApiResponse | null>(null);
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !category || !region) {
-      toast.error("Please fill all fields");
-      return;
-    }
+  useEffect(() => {
+    let cancel = false;
+    (async () => {
+      if (!user) return;
+      setProfileLoading(true);
+      const { data } = await supabase
+        .from("shops")
+        .select("id,name,category,address,monthly_revenue,current_funding,roi_expectation")
+        .eq("owner_id", user.id)
+        .order("created_at")
+        .limit(1)
+        .maybeSingle();
+      if (!cancel) {
+        setProfile(data as ShopFull | null);
+        setProfileLoading(false);
+      }
+    })();
+    return () => { cancel = true; };
+  }, [user?.id, shop?.id]);
+
+  const region = deriveRegion(profile?.address ?? null);
+  const missing: string[] = [];
+  if (!profile?.name) missing.push("Business name");
+  if (!profile?.category) missing.push("Category");
+  if (!region) missing.push(`Region (address must include one of: ${REGIONS.join(", ")})`);
+  if (profile?.monthly_revenue == null) missing.push("Monthly revenue");
+  if (profile?.current_funding == null) missing.push("Current funding");
+  if (profile?.roi_expectation == null) missing.push("ROI expectation");
+
+  const runMatch = async () => {
+    if (!profile || missing.length > 0) return;
     setLoading(true);
     setResult(null);
     try {
       const payload = {
         sme_profile: {
-          name,
-          category,
-          monthly_revenue: parseFloat(monthlyRevenue) || 0,
-          current_funding: parseFloat(currentFunding) || 0,
-          roi_expectation: parseFloat(roiExpectation) || 0,
-          region,
+          name: profile.name!,
+          category: profile.category!,
+          monthly_revenue: Number(profile.monthly_revenue) || 0,
+          current_funding: Number(profile.current_funding) || 0,
+          roi_expectation: Number(profile.roi_expectation) || 0,
+          region: region!,
         },
         top_n: 5,
       };
@@ -111,12 +143,12 @@ function MatchInvestorsPage() {
       risk_level: rec.risk_level,
       explanation: rec.explanation ?? rec.matching_explanations ?? [],
       sme_context: {
-        name,
-        category,
-        region,
-        monthly_revenue: parseFloat(monthlyRevenue) || 0,
-        current_funding: parseFloat(currentFunding) || 0,
-        roi_expectation: parseFloat(roiExpectation) || 0,
+        name: profile?.name ?? "",
+        category: profile?.category ?? "",
+        region: region ?? "",
+        monthly_revenue: Number(profile?.monthly_revenue) || 0,
+        current_funding: Number(profile?.current_funding) || 0,
+        roi_expectation: Number(profile?.roi_expectation) || 0,
         predicted_risk: result?.predicted_risk,
       },
     };
@@ -132,7 +164,7 @@ function MatchInvestorsPage() {
             AI Investor Matching
           </h2>
           <p className="text-xs text-muted-foreground">
-            Powered by our matchmaker model
+            Auto-filled from your business profile
           </p>
         </div>
         <Badge variant="secondary" className="rounded-full">
@@ -140,74 +172,47 @@ function MatchInvestorsPage() {
         </Badge>
       </div>
 
-      <Card className="p-4">
-        <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <Label>SME Name</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} required />
+      {profileLoading ? (
+        <Card className="flex items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading your profile…
+        </Card>
+      ) : missing.length > 0 ? (
+        <Card className="space-y-3 border-warning/40 bg-warning/5 p-4">
+          <div className="flex items-center gap-2 text-warning">
+            <AlertTriangle className="h-5 w-5" />
+            <h3 className="font-semibold">Complete your business profile</h3>
           </div>
-          <div>
-            <Label>Category</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <p className="text-sm text-muted-foreground">
+            We use your business profile to find the best investor matches. Please add the
+            following before running AI matching:
+          </p>
+          <ul className="ml-5 list-disc space-y-1 text-sm">
+            {missing.map((m) => <li key={m}>{m}</li>)}
+          </ul>
+          <Button asChild className="w-full sm:w-auto">
+            <Link to="/app/profile">Go to Business Profile</Link>
+          </Button>
+        </Card>
+      ) : (
+        <Card className="space-y-3 p-4">
+          <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+            <div><div className="text-xs text-muted-foreground">Name</div><div className="font-medium truncate">{profile!.name}</div></div>
+            <div><div className="text-xs text-muted-foreground">Category</div><div className="font-medium">{profile!.category}</div></div>
+            <div><div className="text-xs text-muted-foreground">Region</div><div className="font-medium">{region}</div></div>
+            <div><div className="text-xs text-muted-foreground">Monthly Revenue</div><div className="font-medium tabular-nums">৳{Number(profile!.monthly_revenue).toLocaleString()}</div></div>
+            <div><div className="text-xs text-muted-foreground">Current Funding</div><div className="font-medium tabular-nums">৳{Number(profile!.current_funding).toLocaleString()}</div></div>
+            <div><div className="text-xs text-muted-foreground">ROI Expectation</div><div className="font-medium tabular-nums">{Number(profile!.roi_expectation)}%</div></div>
           </div>
-          <div>
-            <Label>Region</Label>
-            <Select value={region} onValueChange={setRegion}>
-              <SelectTrigger><SelectValue placeholder="Select region" /></SelectTrigger>
-              <SelectContent>
-                {REGIONS.map((r) => (
-                  <SelectItem key={r} value={r}>{r}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Monthly Revenue (BDT)</Label>
-            <Input
-              type="number"
-              min="0"
-              step="any"
-              value={monthlyRevenue}
-              onChange={(e) => setMonthlyRevenue(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <Label>Current Funding (BDT)</Label>
-            <Input
-              type="number"
-              min="0"
-              step="any"
-              value={currentFunding}
-              onChange={(e) => setCurrentFunding(e.target.value)}
-              required
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <Label>ROI Expectation (%)</Label>
-            <Input
-              type="number"
-              min="0"
-              step="any"
-              value={roiExpectation}
-              onChange={(e) => setRoiExpectation(e.target.value)}
-              required
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <Button type="submit" disabled={loading} className="w-full">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button onClick={runMatch} disabled={loading} className="w-full sm:flex-1">
               {loading ? "Finding matches…" : "Find My Investors"}
             </Button>
+            <Button asChild variant="outline" className="w-full sm:w-auto">
+              <Link to="/app/profile">Edit profile</Link>
+            </Button>
           </div>
-        </form>
-      </Card>
+        </Card>
+      )}
 
       {result && (
         <div className="space-y-3 animate-fade-in-up">
